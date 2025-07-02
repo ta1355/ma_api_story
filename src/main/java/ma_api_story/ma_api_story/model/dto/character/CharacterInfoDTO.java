@@ -1,4 +1,4 @@
-package ma_api_story.ma_api_story.model.dto;
+package ma_api_story.ma_api_story.model.dto.character;
 
 import lombok.Builder;
 import lombok.Data;

@@ -1,14 +1,17 @@
 package ma_api_story.ma_api_story.service;
 
 import lombok.RequiredArgsConstructor;
-import ma_api_story.ma_api_story.model.dto.CharacterBasicDTO;
-import ma_api_story.ma_api_story.model.dto.CharacterInfoDTO;
-import ma_api_story.ma_api_story.model.dto.CharacterOCIDDTO;
-import ma_api_story.ma_api_story.model.dto.CharacterStatDTO;
+import ma_api_story.ma_api_story.model.dto.character.CharacterBasicDTO;
+import ma_api_story.ma_api_story.model.dto.character.CharacterInfoDTO;
+import ma_api_story.ma_api_story.model.dto.character.CharacterOCIDDTO;
+import ma_api_story.ma_api_story.model.dto.character.CharacterStatDTO;
+import ma_api_story.ma_api_story.model.dto.item.CharacterItemResponseDto;
+import ma_api_story.ma_api_story.model.dto.item.ItemDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -30,6 +33,25 @@ public class CharacterService {
                 .retrieve()
                 .bodyToMono(CharacterOCIDDTO.class)
                 .block();
+    }
+
+    // 사용자 아이템 조회
+    public List<ItemDto> getItemInfo(String characterName) {
+
+        CharacterOCIDDTO ocid= getCharacterOCID(characterName);
+
+        String characterOCID = ocid.ocid();
+
+        CharacterItemResponseDto response = nexonWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/v1/character/item-equipment")
+                        .queryParam("ocid", characterOCID)
+                        .build())
+                .retrieve()
+                .bodyToMono(CharacterItemResponseDto.class)
+                .block();
+
+        return response.itemEquipment();
     }
 
     // ocid로 캐릭터 기본정보 조회
@@ -57,8 +79,8 @@ public class CharacterService {
     }
 
     // getCharacterBasicInfo,getCharacterStatInfo에서 필요한 정보만 가져온 함수(실질적 사용)
-    public CharacterInfoDTO getCharacterFullInfo(String name) {
-        CharacterOCIDDTO ocidDto = getCharacterOCID(name);
+    public CharacterInfoDTO getCharacterFullInfo(String characterName) {
+        CharacterOCIDDTO ocidDto = getCharacterOCID(characterName);
         String ocid = ocidDto.ocid();
 
         CharacterBasicDTO basic = getCharacterBasicInfo(ocid);
